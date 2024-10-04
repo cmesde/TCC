@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=1">
+<title>Home</title>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<style>
+    *,*:after,*:before{
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -ms-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+    body{
+        font-family: arial;
+        font-size: 16px;
+        margin: 0;
+        background:linear-gradient(to right bottom, #00c3e6, #f75454);
+        color: #000;
+        
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+    
+    .voice_to_text{
+        width: 600px;
+        text-align: center;
+    }
+    h1{
+        color: #fff;
+        font-size: 50px;
+    }
+    #convert_text{
+        width: 100%;
+        height: 200px;
+        border-radius: 10px;
+        resize: none;
+        padding: 10px;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+    button{
+        padding: 12px 20px;
+        background: #0ea4da;
+        border: 0;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-top: 150px;
+    }
+    
+    .recording {
+        background-color: red;
+    }
+    
+</style>
+<body>
+
+    <div class="voice_to_text"> 
+        <h1>Hello 😆😆</h1>
+        <textarea name="" id="convert_text"></textarea> 
+        <button id="click_to_record">🎙️</button>
+    </div>
+
+<script>
+    let speech = true;
+    let recognitionActive = false;
+    let inactivityTimeout;
+
+    window.SpeechRecognition = window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.interimResults = true;
+    recognition.continuous = true; // Keep recording even after pauses
+
+    // Function to clear the textarea after 1 second of no speech
+    function clearTextAfterDelay() {
+        clearTimeout(inactivityTimeout);
+        inactivityTimeout = setTimeout(() => {
+            document.getElementById("convert_text").value = ''; // Clear text after 1 second of no speech
+        }, 1000); // 1-second delay
+    }
+
+    // Start or stop recognition based on button state
+    function toggleRecognition() {
+        if (recognitionActive) {
+            recognition.stop();
+            document.getElementById("click_to_record").classList.remove('recording');
+        } else {
+            recognition.start();
+            document.getElementById("click_to_record").classList.add('recording');
+        }
+        recognitionActive = !recognitionActive;
+    }
+
+    recognition.addEventListener('result', e => {
+        const transcript = Array.from(e.results)
+            .map(result => result[0])
+            .map(result => result.transcript)
+            .join('');
+
+        document.getElementById("convert_text").value = transcript;
+        console.log(transcript);
+
+        clearTextAfterDelay(); // Reset 1-second delay whenever speech is detected
+    });
+
+    recognition.addEventListener('end', () => {
+        // Clear the text after recognition stops and wait before restarting
+        clearTimeout(inactivityTimeout);
+        document.getElementById("convert_text").value = ''; // Clear text when speech ends
+
+        // Automatically restart recognition after clearing
+        setTimeout(() => {
+            if (speech) recognition.start();
+        }, 1000); // Small delay before restarting recognition to ensure textarea is cleared
+    });
+
+    document.getElementById('click_to_record').addEventListener('click', function() {
+        toggleRecognition();
+    });
+
+</script>
+</body>
+</html>
